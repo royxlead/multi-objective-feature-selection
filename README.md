@@ -1,237 +1,121 @@
-# Multi-Objective Evolutionary Feature Selection (MOEFS)
+# MULTI-OBJECTIVE EVOLUTIONARY FEATURE SELECTION README
 
-Joint optimization of feature selection and classifier hyperparameters for medical tabular datasets using NSGA-II (DEAP).
+<div align="center">
 
-GitHub: [Project Repository](https://github.com/royxlead/multi-objective-evolutionary-feature-selection-python.git)
+<img src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=120&section=header&text=Evolutionary%20Feature%20Selection&fontSize=32&fontColor=ffffff&fontAlignY=38&desc=NSGA-II%20for%20Medical%20Tabular%20Data&descAlignY=60&descSize=15&descColor=a5b4fc" width="100%"/>
 
-## What This Project Does
+[![License: MIT](https://img.shields.io/badge/License-MIT-6366f1?style=flat-square)](LICENSE)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![Algorithm](https://img.shields.io/badge/Algorithm-NSGA--II-14b8a6?style=flat-square)]()
+[![Domain](https://img.shields.io/badge/Domain-Medical%20Tabular-f59e0b?style=flat-square)]()
 
-The optimization targets two objectives at the same time:
+</div>
 
-1. Maximize classification performance
-2. Minimize number of selected features
+---
 
-It evolves:
+## Overview
 
-- Binary feature masks
-- Classifier family (RandomForest, SVM, optional XGBoost)
-- Classifier-specific hyperparameters
+This project applies multi-objective evolutionary optimization (NSGA-II) to feature selection on medical tabular data simultaneously optimizing two competing objectives: maximizing model accuracy and minimizing feature count.
 
-It also evaluates required baselines and exports reproducible artifacts (CSV, plots, logs, metadata).
+Standard feature selection treats this as a single-objective problem, collapsing the trade-off into a single metric. This implementation uses Pareto-front optimization to surface the full trade-off curve, giving practitioners explicit control over the accuracy-complexity trade-off.
 
-## Key Features
+> *Every feature you keep has a cost. Every feature you drop has a risk. NSGA-II finds the Pareto front between them.*
 
-- NSGA-II Pareto optimization with knee-point style model selection support
-- Leakage-safe preprocessing (train-only fitting for imputation and optional feature expansion)
-- Baselines included:
-  - PCA + RandomForest
-  - RFE + RandomForest
-  - RF Importance + RandomForest
-  - Grid Search RF
-  - Random Search RF
-- Statistical testing:
-  - Paired t-test
-  - Wilcoxon signed-rank test
-  - Holm-Bonferroni correction
-  - Effect sizes and confidence intervals
-- Interpretability outputs with permutation importance stability
-- Reproducibility metadata (runtime, environment, package versions, config snapshot)
+---
 
-## Datasets
+## The Problem
 
-- Wisconsin Breast Cancer (scikit-learn built-in)
-- Pima Indians Diabetes (downloaded and cached on demand)
-- Heart Disease Cleveland (downloaded and cached on demand)
+In medical ML, fewer features means:
+- Lower data collection cost
+- Reduced patient burden
+- More interpretable models
+- Lower overfitting risk
 
-Note:
+But fewer features also means potential accuracy loss. The optimal trade-off is dataset-dependent and cannot be determined by a single metric.
 
-- The data directory is created only when a run actually needs downloadable datasets.
-- If you run with dataset-limit 1, only Wisconsin is used and no download cache is required.
+---
 
-## Repository Layout
+## Algorithm: NSGA-II
 
-```text
-.
-├── plots/
-├── results/
-├── src/moefs/
-├── tests/
-├── project_demo.ipynb
-├── requirements.txt
-└── run_experiment.py
+Non-dominated Sorting Genetic Algorithm II (NSGA-II) is a multi-objective evolutionary algorithm that maintains a population of candidate feature subsets and evolves them across generations using:
+
+- **Non-dominated sorting** : ranks solutions by Pareto dominance
+- **Crowding distance** : preserves diversity along the Pareto front
+- **Tournament selection** : selects parents for crossover and mutation
+- **Elitism** : preserves best solutions across generations
+
+```
+Population of Feature Subsets
+         │
+         ▼
+┌─────────────────────┐
+│  Evaluate           │   Accuracy + Feature Count
+│  (two objectives)   │   for each candidate subset
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Non-dominated Sort │   Rank by Pareto dominance
+│  + Crowding Distance│   Preserve diversity
+└──────────┬──────────┘
+           │
+           ▼
+┌─────────────────────┐
+│  Selection +        │   Tournament selection
+│  Crossover +        │   Bit-flip mutation
+│  Mutation           │   New generation
+└──────────┬──────────┘
+           │
+     Next Generation
+           │
+     (repeat until convergence)
+           │
+           ▼
+      Pareto Front of Feature Subsets
 ```
 
-## Requirements
+---
 
-- Python 3.10+
-- See requirements.txt for pinned minimum package versions
+## Results
 
-## Installation
+The Pareto front reveals the full accuracy-complexity trade-off from the minimal feature subset that preserves acceptable accuracy to the full feature set at maximum accuracy. Practitioners choose any point on this front based on deployment constraints.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Optimization** | NSGA-II (custom implementation) |
+| **ML Evaluation** | scikit-learn |
+| **Data** | Medical tabular datasets |
+| **Visualization** | Matplotlib |
+| **Language** | Python 3.10+ |
+
+---
+
+## Getting Started
 
 ```bash
-python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS/Linux
-source .venv/bin/activate
+git clone https://github.com/royxlead/multi-objective-evolutionary-feature-selection-python.git
+cd multi-objective-evolutionary-feature-selection-python
 
 pip install -r requirements.txt
+python nsga2_feature_selection.py
 ```
 
-Optional:
+---
 
-```bash
-pip install xgboost
-```
+## Research Context
 
-## Run
+Multi-objective feature selection is an active area in medical ML where interpretability requirements conflict with accuracy maximization. NSGA-II is one of the most widely cited multi-objective evolutionary algorithms, offering strong theoretical guarantees on Pareto front convergence and diversity preservation.
 
-Default run:
+---
 
-```bash
-python run_experiment.py
-```
+<div align="center">
 
-Quick smoke run:
+**[Portfolio](https://royxlead.netlify.app) · [LinkedIn](https://linkedin.com/in/royxlead) · [ORCID](https://orcid.org/0009-0009-6582-2295)**
 
-```bash
-python run_experiment.py --quick
-```
+<img src="https://capsule-render.vercel.app/api?type=waving&color=6366f1&height=80&section=footer" width="100%"/>
 
-Single-dataset run (fast, useful for demos/CI):
-
-```bash
-python run_experiment.py --dataset-limit 1 --quick
-```
-
-Minimal proof-style run used in this workspace:
-
-```bash
-python run_experiment.py --dataset-limit 1 --population-size 4 --generations 1 --seed 42 --disable-feature-expansion
-```
-
-## Main CLI Options
-
-- --population-size INT
-- --generations INT
-- --seed INT
-- --dataset-limit INT
-- --quick
-- --disable-feature-expansion
-- --enable-xgboost
-
-## Sample Input and Output
-
-Sample input command:
-
-```bash
-python run_experiment.py --dataset-limit 1 --population-size 4 --generations 1 --seed 42 --disable-feature-expansion
-```
-
-Sample console output excerpt:
-
-```text
-INFO | Processing dataset: Wisconsin Breast Cancer
-INFO | [Wisconsin Breast Cancer] Gen 1 | acc_max=0.9605 acc_mean=0.9033 feat_min=9
-INFO | Running baseline: PCA + RandomForest
-INFO | Running baseline: RFE + RandomForest
-INFO | Running baseline: RF importance + RandomForest
-INFO | Running baseline: Grid Search RF
-INFO | Running baseline: Random Search RF
-INFO | Experiment completed successfully.
-```
-
-Sample output table (results/final_comparison_table.csv):
-
-```csv
-dataset,Grid Search RF,NSGA-II (DEAP),PCA + RandomForest,RF Importance + RandomForest,RFE + RandomForest,Random Search RF
-Wisconsin Breast Cancer,0.9473684210526315,0.9473684210526315,0.9385964912280702,0.9473684210526315,0.9473684210526315,0.9122807017543859
-```
-
-Sample method summary (results/summary_by_method.csv):
-
-```csv
-method,accuracy,precision,recall,f1_score,n_features
-Grid Search RF,0.9473684210526315,0.9583333333333334,0.9583333333333334,0.9583333333333334,30.0
-NSGA-II (DEAP),0.9473684210526315,0.9714285714285714,0.9444444444444444,0.9577464788732394,9.0
-```
-
-## Outputs
-
-After each run, artifacts are written to:
-
-- results/
-- plots/
-
-Common result files:
-
-- results/experiment.log
-- results/experiment_metadata.json
-- results/all_results.csv
-- results/summary_by_method.csv
-- results/final_comparison_table.csv
-- results/significance_tests.csv
-
-Common plot files:
-
-- plots/*_pareto_front.png
-- plots/*_evolution_history.png
-- plots/*_method_comparison.png
-- plots/*_nsga_feature_stability.png
-- plots/overall_accuracy_boxplot.png
-
-## Sample Plots
-
-Pareto Front:
-
-![Pareto Front](plots/wisconsin_breast_cancer_pareto_front.png)
-
-Evolution History:
-
-![Evolution History](plots/wisconsin_breast_cancer_evolution_history.png)
-
-Method Comparison:
-
-![Method Comparison](plots/wisconsin_breast_cancer_method_comparison.png)
-
-Feature Stability:
-
-![Feature Stability](plots/wisconsin_breast_cancer_nsga_feature_stability.png)
-
-Overall Accuracy Boxplot:
-
-![Overall Accuracy Boxplot](plots/overall_accuracy_boxplot.png)
-
-## Suggested GitHub Proof Bundle (Minimal)
-
-If you want to upload concise proof of work, keep only:
-
-1. results/experiment.log
-2. results/experiment_metadata.json
-3. results/final_comparison_table.csv
-4. results/summary_by_method.csv
-
-Optional add-on:
-
-- one representative plot, e.g. plots/wisconsin_breast_cancer_pareto_front.png
-
-## Testing
-
-```bash
-pytest
-```
-
-Tests cover core pipeline behavior including dataset loading, baselines, evaluation, and evolutionary operators.
-
-## Notebook Demo
-
-Use project_demo.ipynb for an interactive walkthrough.
-
-## Notes for Stronger Results
-
-- Increase population size and generations
-- Run multiple seeds and aggregate statistics
-- Enable XGBoost if available
-- Report confidence intervals across repeated runs
+</div>
