@@ -239,7 +239,9 @@ Multi-objective feature selection is an active research area in medical ML, wher
 
 NSGA-II (Deb et al., 2002) is one of the most cited multi-objective evolutionary algorithms, with strong theoretical guarantees on Pareto front convergence and diversity preservation via crowding distance. This implementation extends the standard NSGA-II formulation by jointly evolving feature masks and classifier hyperparameters in a single optimization loop - avoiding the two-stage bias introduced by selecting features first and tuning hyperparameters second.
 
-**Connection to related work:** The unsupervised confidence metric in [Self-Diagnosing Neural Models](https://github.com/royxlead/self-diagnosing-neural-models-python) and the drift monitoring in [DriftWatch](https://github.com/royxlead/driftwatch-python) both operate on model outputs. Feature selection determines what goes into the model. These three projects form a coherent pipeline: select features carefully, monitor for drift, and quantify uncertainty in deployment.
+**Connection to related work:** The unsupervised confidence metric in [Unsupervised Confidence Estimation
+](https://github.com/royxlead/unsupervised-confidence-estimation) and the drift monitoring in [Production Drift Detection
+](https://github.com/royxlead/production-drift-detection) both operate on model outputs. Feature selection determines what goes into the model. These three projects form a coherent pipeline: select features carefully, monitor for drift, and quantify uncertainty in deployment.
 
 ---
 
